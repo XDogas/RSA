@@ -47,6 +47,22 @@ services:
                 ipv4_address: 192.168.98.30
         sysctls:      
             kernel.msgmax:  16384
+
+    obu3:
+        hostname: obu3
+        image: vanetza:test
+        environment:
+            - VANETZA_STATION_ID=4
+            - VANETZA_STATION_TYPE=5
+            - VANETZA_MAC_ADDRESS=6e:06:e0:03:00:04
+            - VANETZA_INTERFACE=eth0
+            - START_EMBEDDED_MOSQUITTO=true
+            - VANETZA_CAM_PERIODICITY=0
+        networks:
+            vanetzalan0:
+                ipv4_address: 192.168.98.40
+        sysctls:      
+            kernel.msgmax:  16384
             
 networks:
   vanetzalan0:
