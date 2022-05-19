@@ -36,7 +36,7 @@ logging.basicConfig(level=logging.INFO)
 
 mqtt.Client.connected_flag = False  # create flag in class
 
-broker = "192.168.98.20"            # broker to connect
+broker = "192.168.98.40"            # broker to connect
 topic = "vanetza/in/cam"            # CAMs
 client = mqtt.Client()              # create new instance
 
@@ -67,18 +67,18 @@ initialFilePath = "my_jsons/cam_obu.json"
 initialDataDict = jsonFile.toDict(initialFilePath)
 
 initialLatitude = initialDataDict["latitude"]
-latitude10m = distances.metersToLatitude(10)
-print("DEBUG: _________________________________latitude10m =", latitude10m) # DEBUG
-initialDataDict["latitude"] -= latitude10m
+latitude30m = distances.metersToLatitude(30)
+print("DEBUG: _________________________________latitude10m =", latitude30m) # DEBUG
+initialDataDict["latitude"] -= latitude30m
 
 dirPath = "my_jsons"
-fileName= "cam_obu1.json"
+fileName= "cam_obu3.json"
 filePath = dirPath + "/" + fileName
 jsonFile.writeFile(initialDataDict, dirPath, fileName)
 
 while True:
     dataDict = jsonFile.toDict(filePath)
-    if dataDict["latitude"] < initialLatitude:
+    if dataDict["latitude"] < initialLatitude-distances.metersToLatitude(20):
         print("DEBUG: _________________________________latitude =", dataDict["latitude"])
         jsonFile.setValue(filePath, "latitude", dataDict["latitude"]+1)
     else:

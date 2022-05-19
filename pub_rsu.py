@@ -62,7 +62,8 @@ while not client.connected_flag:    # wait for connection
 print("subscribing to " + topic)
 client.subscribe(topic)
 
-dataStr = jsonFile.toStr("examples/in_cam.json")
+filePath = "my_jsons/cam_rsu.json"
+dataStr = jsonFile.toStr(filePath)
 
 while True:
     print("publishing")
@@ -70,7 +71,7 @@ while True:
     res = client.publish(topic, dataStr)
     if not res[0]==0:
         break
-    time.sleep(1)
+    time.sleep(0.1)
     
 client.loop_stop()                  # stop loop
 client.disconnect()                 # disconnect

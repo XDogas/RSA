@@ -4,6 +4,7 @@ import time
 import sys
 import logging
 import jsonFile
+import distances
 
 # client logging function
 def on_log(client, userdata, level, buf):
@@ -62,18 +63,32 @@ while not client.connected_flag:    # wait for connection
 print("subscribing to " + topic)
 client.subscribe(topic)
 
-filePath = "my_jsons/cam.json"
+initialFilePath = "my_jsons/cam_obu.json"
+initialDataDict = jsonFile.toDict(initialFilePath)
+
+initialLatitude = initialDataDict["latitude"]
+latitude20m = distances.metersToLatitude(20)
+print("DEBUG: _________________________________latitude10m =", latitude20m) # DEBUG
+initialDataDict["latitude"] -= latitude20m
+
+dirPath = "my_jsons"
+fileName= "cam_obu2.json"
+filePath = dirPath + "/" + fileName
+jsonFile.writeFile(initialDataDict, dirPath, fileName)
 
 while True:
     dataDict = jsonFile.toDict(filePath)
-    print("latitude ======================================================================", dataDict["latitude"]) # DEBUG
-    jsonFile.setValue(filePath, "latitude", dataDict["latitude"]+1)
+    if dataDict["latitude"] < initialLatitude-distances.metersToLatitude(10):
+        print("DEBUG: _________________________________latitude =", dataDict["latitude"])
+        jsonFile.setValue(filePath, "latitude", dataDict["latitude"]+1)
+    else:
+        print("DEBUG: _________________________________parou em latitude =", dataDict["latitude"])
     dataStr = jsonFile.toStr(filePath)
     print("publishing")
     res = client.publish(topic, dataStr)
     if not res[0]==0:
         break
-    time.sleep(1)
+    time.sleep(0.1)
     
 client.loop_stop()                  # stop loop
 client.disconnect()                 # disconnect
