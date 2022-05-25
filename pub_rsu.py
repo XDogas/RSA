@@ -36,7 +36,8 @@ logging.basicConfig(level=logging.INFO)
 mqtt.Client.connected_flag = False  # create flag in class
 
 broker = "192.168.98.10"            # broker to connect
-topic = "vanetza/in/cam"            # CAMs
+camTopic = "vanetza/in/cam"         # CAMs
+denmTopic = "vanetza/in/denm"       # DENMs
 client = mqtt.Client()              # create new instance
 
 client.on_log = on_log             # client logging
@@ -59,17 +60,24 @@ while not client.connected_flag:    # wait for connection
     print("establishing connection...")
     time.sleep(1)
 
-print("subscribing to " + topic)
-client.subscribe(topic)
+print("subscribing to " + camTopic)
+client.subscribe(camTopic)
+print("subscribing to " + denmTopic)
+client.subscribe(denmTopic)
 
-filePath = "my_jsons/cam_rsu.json"
-dataStr = jsonFile.toStr(filePath)
+camFilePath = "my_jsons/cam_rsu.json"
+camDataStr = jsonFile.toStr(camFilePath)
+denmFilePath = "my_jsons/denm_rsu.json"
+denmDataStr = jsonFile.toStr(denmFilePath)
 
 while True:
-    print("publishing")
-    # res = client.publish(topic, '{"accEngaged": true,"acceleration": 0,"altitude": 800001,"altitudeConf": 15,"brakePedal": true,"collisionWarning": true,"cruiseControl": true,"curvature": 1023,"driveDirection": "FORWARD","emergencyBrake": true,"gasPedal": false,"heading": 3601,"headingConf": 127,"latitude": 400000000,"length": 100,"longitude": -80000000,"semiMajorConf": 4095,"semiMajorOrient": 3601,"semiMinorConf": 4095,"specialVehicle": {"publicTransportContainer": {"embarkationStatus": false}},"speed": 16383,"speedConf": 127,"speedLimiter": true,"stationID": 1,"stationType": 15,"width": 30,"yawRate": 0}')
-    res = client.publish(topic, dataStr)
-    if not res[0]==0:
+    print("publishing cam")
+    camRes = client.publish(camTopic, camDataStr)
+    if not camRes[0]==0:
+        break
+    print("publishing denm")
+    denmRes = client.publish(denmTopic, denmDataStr)
+    if not denmRes[0]==0:
         break
     time.sleep(0.1)
     
