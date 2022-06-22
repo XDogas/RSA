@@ -66,6 +66,8 @@ client.subscribe(topic)
 initialFilePath = "my_jsons/cam_obu.json"
 initialDataDict = jsonFile.toDict(initialFilePath)
 
+initialDataDict["stationID"] = 2
+
 initialLatitude = initialDataDict["latitude"]
 latitude10m = distances.metersToLatitude(10)
 print("DEBUG: _________________________________latitude10m =", latitude10m) # DEBUG

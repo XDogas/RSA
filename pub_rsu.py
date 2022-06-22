@@ -79,7 +79,7 @@ while True:
     denmRes = client.publish(denmTopic, denmDataStr)
     if not denmRes[0]==0:
         break
-    time.sleep(0.1)
+    time.sleep(1)
     
 client.loop_stop()                  # stop loop
 client.disconnect()                 # disconnect

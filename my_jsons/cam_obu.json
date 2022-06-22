@@ -12,9 +12,9 @@
     "gasPedal": false,
     "heading": 3601,
     "headingConf": 127,
-    "latitude": 400000000,
-    "length": 100,
-    "longitude": -80000000,
+    "latitude": 40.63237,
+    "length": 10.0,
+    "longitude": -8.64841,
     "semiMajorConf": 4095,
     "semiMajorOrient": 3601,
     "semiMinorConf": 4095,
@@ -23,11 +23,11 @@
             "embarkationStatus": false
         }
     },
-    "speed": 16383,
+    "speed": 5,
     "speedConf": 127,
     "speedLimiter": true,
     "stationID": 1,
     "stationType": 5,
-    "width": 30,
+    "width": 3.0,
     "yawRate": 0
 }

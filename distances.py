@@ -1,13 +1,10 @@
 import math
 
-def removeFactor(value):
-    return value * 10**-7
-
 def distanceBetween(lat1, lon1, lat2, lon2):
-    lat1 = math.radians(removeFactor(lat1))
-    lon1 = math.radians(removeFactor(lon1))
-    lat2 = math.radians(removeFactor(lat2))
-    lon2 = math.radians(removeFactor(lon2))
+    lat1 = math.radians(lat1)
+    lon1 = math.radians(lon1)
+    lat2 = math.radians(lat2)
+    lon2 = math.radians(lon2)
 
     dlat = lat2 - lat1
     dlon = lon2 - lon1
@@ -19,7 +16,7 @@ def distanceBetween(lat1, lon1, lat2, lon2):
 
     r = 6371    # Radius of earth in kilometers
 
-    return (c * r) * 10**3
+    return (c * r)
 
 # def distToGPS(distance, currLat, currLon):
 #     currLat = math.radians(removeFactor(currLat))
@@ -58,10 +55,10 @@ def metersToLatitude(meters):
         dist = distanceBetween(lat1, 0, lat2, 0)
     return lat2
 
-latitude = 400000000
-longitude = -80000000
-latitude2 = 400000090
-longitude2 = -80000000
+latitude = 40.0000000
+longitude = -8.0000000
+latitude2 = 40.0000090
+longitude2 = -8.0000000
 
 # Tests
 dist = distanceBetween(latitude, longitude, latitude2, longitude2)
