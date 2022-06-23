@@ -23,3 +23,7 @@ def setValue(filePath, key, value):                     # function to set a valu
     dataDict[key] = value                               # set value associated with thekey
     with open(filePath, "w") as f:                      # open to write
         json.dump(dataDict, f)                          # create json file with the new value
+
+def updateFile(filePath, dataDict):                     # funciton to update file
+    with open(filePath, "w") as f:                      # open to write
+        json.dump(dataDict, f)                          # create json file with the new value

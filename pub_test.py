@@ -120,10 +120,29 @@ client3.subscribe(cpmTopic)
 # jsonFile.writeFile(camOBUDataDict, dirPath, fileName)
 # camOBU1DataStr = jsonFile.toStr(camOBU1filePath)
 
-
+# OBUs
 cpmOBUFilePath = "my_jsons/cpm_obu.json"
 cpmOBUDataDict = jsonFile.toDict(cpmOBUFilePath)
+
 # OBU 1
+cpmOBU1FilePath = "my_jsons/cpm_obu1.json"
+cpmOBU1DataDict = jsonFile.toDict(cpmOBU1FilePath)
+cpmOBU1DataDict["cpmParameters"]["numberOfPerceivedObjects"] = 0
+cpmOBU1DataDict["cpmParameters"]["managementContainer"]["stationType"] = 5
+cpmOBU1DataDict["cpmParameters"]["managementContainer"]["referencePosition"]["latitude"] = 10
+cpmOBU1DataDict["cpmParameters"]["managementContainer"]["referencePosition"]["longitude"] = 10
+# cpmOBU1DataDict["cpmParameters"]["stationDataContainer"]["originatingVehicleContainer"]["speed"]["speedValue"] = 5
+# cpmOBU1DataDict["cpmParameters"]["perceivedObjectContainer"]["xDistance"]["value"] = distanceBetween(...)
+# cpmOBU1DataDict["cpmParameters"]["perceivedObjectContainer"]["yDistance"]["value"] = 0
+# cpmOBU1DataDict["cpmParameters"]["perceivedObjectContainer"]["xSpeed"]["value"] = velocidade do veiculo à frente
+# cpmOBU1DataDict["cpmParameters"]["perceivedObjectContainer"]["ySpeed"]["value"] = 0
+dirPath = "my_jsons"
+fileName = "cpm_obu1.json"
+jsonFile.writeFile(cpmOBU1DataDict, dirPath, fileName)
+cpmOBU1DataStr = jsonFile.toStr(cpmOBU1FilePath)
+
+
+# OBU 2
 cpmOBUDataDict["cpmParameters"]["numberOfPerceivedObjects"] = 0
 cpmOBUDataDict["cpmParameters"]["managementContainer"]["stationType"] = 5
 cpmOBUDataDict["cpmParameters"]["managementContainer"]["referencePosition"]["latitude"] = 10
@@ -134,22 +153,10 @@ cpmOBUDataDict["cpmParameters"]["managementContainer"]["referencePosition"]["lon
 # cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"]["xSpeed"]["value"] = velocidade do veiculo à frente
 # cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"]["ySpeed"]["value"] = 0
 dirPath = "my_jsons"
-fileName = "cpm_obu1.json"
-cpmOBU1FilePath = dirPath + "/" + fileName
+fileName = "cpm_obu2.json"
+cpmOBU2FilePath = dirPath + "/" + fileName
 jsonFile.writeFile(cpmOBUDataDict, dirPath, fileName)
-cpmOBU1DataStr = jsonFile.toStr(cpmOBU1FilePath)
-
-
-# # OBU 2
-# camOBUDataDict["stationID"] = 3
-# # camOBUDataDict["latitude"] = positions[0][0]
-# # camOBUDataDict["longitude"] = positions[0][1]
-# dirPath = "my_jsons"
-# fileName= "cam_obu2.json"
-# camOBU2filePath = dirPath + "/" + fileName
-# jsonFile.writeFile(camOBUDataDict, dirPath, fileName)
-# camOBU2DataStr = jsonFile.toStr(camOBU2filePath)
-
+cpmOBU2DataStr = jsonFile.toStr(cpmOBU2FilePath)
 
 
 while True:
@@ -161,8 +168,12 @@ while True:
     # camRSURes = client2.publish(camTopic, camOBU1DataStr)
     # if not camRSURes[0]==0:
     #     break
-    print("----OBU 1 Publishing cpm")
+    print("----OBU 1 Publishing CPM")
     camRSURes = client2.publish(cpmTopic, cpmOBU1DataStr)
+    if not camRSURes[0]==0:
+        break
+    print("----OBU 2 Publishing CPM")
+    camRSURes = client3.publish(cpmTopic, cpmOBU2DataStr)
     if not camRSURes[0]==0:
         break
     # print("----OBU 2 Publishing cam")
