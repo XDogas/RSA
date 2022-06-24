@@ -61,18 +61,27 @@ def randomIdx():
     end = 4/freq # 4th second index
     return random.randint(start, end)
 
-def updateCam(camFileName, dataDict, coordinates, speed, lastSpeed):
-    dataDict["latitude"] = coordinates[0]
-    dataDict["longitude"] = coordinates[1]
-    dataDict["speed"] = speed
-    currSpeed = dataDict["speed"]
-    acceleration = (currSpeed - lastSpeed) / freq
-    # dataDict["acceleration"] = (currSpeed - lastSpeed) / freq
-    dataDict["brakePedal"] = False
+def updateCAM(camFileName, dataDictCAM, coordinates, speed, lastSpeed):
+    dataDictCAM["latitude"] = coordinates[0]
+    dataDictCAM["longitude"] = coordinates[1]
+    dataDictCAM["speed"] = speed
+    acceleration = (speed - lastSpeed) / freq
+    # dataDictCAM["acceleration"] = (currSpeed - lastSpeed) / freq
+    dataDictCAM["brakePedal"] = False
     if acceleration < 0 or lastSpeed == speed == 0:
-        dataDict["brakePedal"] = True
-    dataDict["gasPedal"] = not dataDict["brakePedal"]
-    jsonFile.updateFile(camFileName, dataDict)
+        dataDictCAM["brakePedal"] = True
+    dataDictCAM["gasPedal"] = not dataDictCAM["brakePedal"]
+    jsonFile.updateFile(camFileName, dataDictCAM)
+
+def updateCPM(cpmFileName, dataDictCPM, coordinates, speed, distance=None):
+    dataDictCPM["cpmParameters"]["managementContainer"]["referencePosition"]["latitude"] = coordinates[0]
+    dataDictCPM["cpmParameters"]["managementContainer"]["referencePosition"]["longitude"] = coordinates[1]
+    dataDictCPM["cpmParameters"]["stationDataContainer"]["originatingVehicleContainer"]["speed"]["speedValue"] = speed
+    # if len(dataDictCPM["cpmParameters"]["perceivedObjectContainer"]) == 1: # tem carro à frente
+    if distance != None:
+        dataDictCPM["cpmParameters"]["perceivedObjectContainer"][0]["xDistance"]["value"] = distance
+        # dataDictCPM["cpmParameters"]["perceivedObjectContainer"][0]["xSpeed"]["value"] = 5
+    jsonFile.updateFile(cpmFileName, dataDictCPM)
 
 # client logging function
 def on_log(client, userdata, level, buf):
@@ -141,6 +150,9 @@ delayToMove = 0 # number of iterations after the rsu publishes demn (green light
 endDelayToMove = 2/freq # 2 seconds -> 2/0.2 = 10 iterations
 endDelayToMove = randomIdx() # 1 to 4 seconds -> 5 to 20 iterations
 leaderPressedGasPedal = False
+lengthOBU1 = 5
+lengthOBU2 = 5
+lengthOBU3 = 6
 
 #logging.basicConfig(level=logging.INFO)
 
@@ -197,6 +209,12 @@ jsonFile.writeFile(camRSUDataDict, "my_jsons", "cam_rsu.json")
 camRSUDataStr = jsonFile.toStr(camRSUFilePath)
 # DENM
 denmRSUFilePath = "my_jsons/denm_rsu.json"
+denmRSUDataDict = jsonFile.toDict(denmRSUFilePath)
+denmRSUDataDict["management"]["eventPosition"]["latitude"] = semaforo[0]
+denmRSUDataDict["management"]["eventPosition"]["longitude"] = semaforo[1]
+denmRSUDataDict["situation"]["eventType"]["causeCode"] = 31
+denmRSUDataDict["situation"]["eventType"]["subCauseCode"] = 31
+jsonFile.writeFile(denmRSUDataDict, "my_jsons", "denm_rsu.json")
 denmRSUDataStr = jsonFile.toStr(denmRSUFilePath)
 # CPM
 # cpmRSUFilePath = "my_jsons/cpm_rsu.json"
@@ -211,9 +229,9 @@ denmRSUDataStr = jsonFile.toStr(denmRSUFilePath)
 # CAM
 camOBUFilePath = "my_jsons/cam_obu.json"
 camOBUDataDict = jsonFile.toDict(camOBUFilePath)
-# CPM
-# cpmOBUFilePath = "my_jsons/cpm_obu.json"
-# cpmOBUDataDict = jsonFile.toDict(cpmOBUFilePath)
+# CPM para OBUs 2 e 3
+cpmOBUFilePath = "my_jsons/cpm_obu.json"
+cpmOBUDataDict = jsonFile.toDict(cpmOBUFilePath)
 # --------------------------------------------------------------
 
 # OBU 1 --------------------------------------------------------
@@ -221,18 +239,28 @@ camOBUDataDict = jsonFile.toDict(camOBUFilePath)
 camOBUDataDict["stationID"] = 2
 camOBUDataDict["latitude"] = positions[0][0]
 camOBUDataDict["longitude"] = positions[0][1]
+camOBUDataDict["speed"] = 5
+camOBUDataDict["length"] = lengthOBU1
 dirPath = "my_jsons"
 fileName= "cam_obu1.json"
 camOBU1filePath = dirPath + "/" + fileName
 jsonFile.writeFile(camOBUDataDict, dirPath, fileName)
-startIdxOBU1 = 0
-# currSpeedOBU1 = 5
-lastSpeedOBU1 = 5
 # CPM
-# ...
+cpmOBU1FilePath = "my_jsons/cpm_obu1.json"
+cpmOBU1DataDict = jsonFile.toDict(cpmOBU1FilePath)
+cpmOBU1DataDict["cpmParameters"]["managementContainer"]["referencePosition"]["latitude"] = positions[0][0]
+cpmOBU1DataDict["cpmParameters"]["managementContainer"]["referencePosition"]["longitude"] = positions[0][1]
+cpmOBU1DataDict["cpmParameters"]["stationDataContainer"]["originatingVehicleContainer"]["speed"]["speedValue"] = 5
+cpmOBU1DataDict["cpmParameters"]["numberOfPerceivedObjects"] = 0
+dirPath = "my_jsons"
+fileName= "cpm_obu1.json"
+jsonFile.writeFile(cpmOBU1DataDict, dirPath, fileName)
 # map
 markerOBU1 = Marker(location=inicio, draggable=False)
 m.add_layer(markerOBU1)
+#
+startIdxOBU1 = 0
+lastSpeedOBU1 = 5
 # --------------------------------------------------------------
 
 # OBU 2 --------------------------------------------------------
@@ -240,19 +268,33 @@ m.add_layer(markerOBU1)
 camOBUDataDict["stationID"] = 3
 camOBUDataDict["latitude"] = positions[0][0]
 camOBUDataDict["longitude"] = positions[0][1]
+camOBUDataDict["speed"] = 5
+camOBUDataDict["length"] = lengthOBU2
 dirPath = "my_jsons"
 fileName= "cam_obu2.json"
 camOBU2filePath = dirPath + "/" + fileName
 jsonFile.writeFile(camOBUDataDict, dirPath, fileName)
-startIdxOBU2 = startIdxOBU1 + randomIdx()
-# print("startIdxOBU2 =", startIdxOBU2)
-readyOBU2 = False
-lastSpeedOBU2 = 5
 # CPM
-# ...
+cpmOBUDataDict["cpmParameters"]["managementContainer"]["referencePosition"]["latitude"] = 10
+cpmOBUDataDict["cpmParameters"]["managementContainer"]["referencePosition"]["longitude"] = 10
+cpmOBUDataDict["cpmParameters"]["stationDataContainer"]["originatingVehicleContainer"]["speed"]["speedValue"] = 5
+cpmOBUDataDict["cpmParameters"]["numberOfPerceivedObjects"] = 1
+cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["objectID"] = 0 # 0, 1, 2, 3 ou 4, ver no wireshark o que são
+cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["xDistance"]["value"] = -1
+cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["yDistance"]["value"] = 0
+# cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["xSpeed"]["value"] = 5
+# cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["ySpeed"]["value"] = 0
+dirPath = "my_jsons"
+fileName= "cpm_obu2.json"
+cpmOBU2FilePath = dirPath + "/" + fileName
+jsonFile.writeFile(cpmOBUDataDict, dirPath, fileName)
 # map
 markerOBU2 = Marker(location=inicio, draggable=False)
 # m.add_layer(markerOBU2)
+#
+startIdxOBU2 = startIdxOBU1 + randomIdx()
+readyOBU2 = False
+lastSpeedOBU2 = 5
 # --------------------------------------------------------------
 
 # OBU 3 --------------------------------------------------------
@@ -260,19 +302,33 @@ markerOBU2 = Marker(location=inicio, draggable=False)
 camOBUDataDict["stationID"] = 4
 camOBUDataDict["latitude"] = positions[0][0]
 camOBUDataDict["longitude"] = positions[0][1]
+camOBUDataDict["speed"] = 5
+camOBUDataDict["length"] = lengthOBU3
 dirPath = "my_jsons"
 fileName= "cam_obu3.json"
 camOBU3filePath = dirPath + "/" + fileName
 jsonFile.writeFile(camOBUDataDict, dirPath, fileName)
-startIdxOBU3 = startIdxOBU2 + randomIdx()
-# print("startIdxOBU3 =", startIdxOBU3)
-readyOBU3 = False
-lastSpeedOBU3 = 5
 # CPM
-# ...
+cpmOBUDataDict["cpmParameters"]["managementContainer"]["referencePosition"]["latitude"] = 10
+cpmOBUDataDict["cpmParameters"]["managementContainer"]["referencePosition"]["longitude"] = 10
+cpmOBUDataDict["cpmParameters"]["stationDataContainer"]["originatingVehicleContainer"]["speed"]["speedValue"] = 5
+cpmOBUDataDict["cpmParameters"]["numberOfPerceivedObjects"] = 1
+cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["objectID"] = 0 # 0, 1, 2, 3 ou 4, ver no wireshark o que são
+cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["xDistance"]["value"] = -1
+cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["yDistance"]["value"] = 0
+# cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["xSpeed"]["value"] = 5
+# cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["ySpeed"]["value"] = 0
+dirPath = "my_jsons"
+fileName= "cpm_obu3.json"
+cpmOBU3FilePath = dirPath + "/" + fileName
+jsonFile.writeFile(cpmOBUDataDict, dirPath, fileName)
 # map
 markerOBU3 = Marker(location=inicio, draggable=False)
 # m.add_layer(markerOBU3)
+#
+startIdxOBU3 = startIdxOBU2 + randomIdx()
+readyOBU3 = False
+lastSpeedOBU3 = 5
 # --------------------------------------------------------------
 
 # map
@@ -305,37 +361,24 @@ while True:
     # OBU 1
     print("\nOBU 1:")
     dataDict = jsonFile.toDict(camOBU1filePath)
+    dataDictCPM = jsonFile.toDict(cpmOBU1FilePath)
     currCoordinates = (dataDict["latitude"], dataDict["longitude"])
     if not rsuGreen:
         if distanceBetween(currCoordinates, semaforo) > 5:
             positionsIdxOBU1 += 1
             newCoordinates = (positions[positionsIdxOBU1][0], positions[positionsIdxOBU1][1])
-            #
             newSpeed = 5
-            updateCam(camOBU1filePath, dataDict, newCoordinates, newSpeed, lastSpeedOBU1)
+            updateCAM(camOBU1filePath, dataDict, newCoordinates, newSpeed, lastSpeedOBU1)
+            updateCPM(cpmOBU1FilePath, dataDictCPM, newCoordinates, newSpeed)
             lastSpeedOBU1 = newSpeed
-            #
-            # dataDict["latitude"] = newCoordinates[0]
-            # dataDict["longitude"] = newCoordinates[1]
-            # dataDict["speed"] = 5
-            # currSpeedOBU1 = dataDict["speed"]
-            # dataDict["acceleration"] = (currSpeedOBU1 - lastSpeedOBU1) / freq
-            # lastSpeedOBU1 = currSpeedOBU1
-            # dataDict["brakePedal"] = False
-            # dataDict["gasPedal"] = True
-            #
-            # print("OBU 1: coordinates =", newCoordinates, ", speed = 5 m/s")
             print("Percurso antes do semáforo")
             # map
             locationOBU1 = positions[positionsIdxOBU1]
         else:
             newSpeed = 0
-            updateCam(camOBU1filePath, dataDict, currCoordinates, newSpeed, lastSpeedOBU1)
+            updateCAM(camOBU1filePath, dataDict, currCoordinates, newSpeed, lastSpeedOBU1)
+            updateCPM(cpmOBU1FilePath, dataDictCPM, newCoordinates, newSpeed)
             lastSpeedOBU1 = newSpeed
-            # dataDict["speed"] = 0
-            # dataDict["brakePedal"] = True
-            # dataDict["gasPedal"] = False
-            # print("OBU 1: parou, coordinates =", currCoordinates, ", speed = 0 m/s")
             print("Parou")
             obuWaiting = True
             # map
@@ -343,7 +386,6 @@ while True:
     else:
         if delayToMove != endDelayToMove:
             delayToMove += 1 # apenas atualizado na OBU 1
-            # print("OBU 1: delay to move, coordinates =", currCoordinates, ", speed = 0 m/s")
             print("Tempo de espera para reagir")
             # map
             locationOBU1 = positions[positionsIdxOBU1]
@@ -352,21 +394,20 @@ while True:
             positionsIdxOBU1 += 1
             newCoordinates = (positions[positionsIdxOBU1][0], positions[positionsIdxOBU1][1])
             newSpeed = 5
-            updateCam(camOBU1filePath, dataDict, newCoordinates, newSpeed, lastSpeedOBU1)
+            updateCAM(camOBU1filePath, dataDict, newCoordinates, newSpeed, lastSpeedOBU1)
+            updateCPM(cpmOBU1FilePath, dataDictCPM, newCoordinates, newSpeed)
             lastSpeedOBU1 = newSpeed
-            # dataDict["latitude"] = newCoordinates[0]
-            # dataDict["longitude"] = newCoordinates[1]
-            # dataDict["speed"] = 5
-            # dataDict["brakePedal"] = False
-            # dataDict["gasPedal"] = True
-            # print("OBU 1: coordinates =", newCoordinates, ", speed = 5 m/s")
             print("Continuar percurso")
             # map
             locationOBU1 = positions[positionsIdxOBU1]    
-    # jsonFile.updateFile(camOBU1filePath, dataDict)
     dataStr = jsonFile.toStr(camOBU1filePath)
     print("Publishing CAM: coordinates = (" + str(dataDict["latitude"]) + ", " + str(dataDict["longitude"]) + "), speed =", dataDict["speed"], "m/s")
     res = clients[1].publish(camTopic, dataStr)
+    if not res[0]==0:
+        break
+    dataStrCPM = jsonFile.toStr(cpmOBU1FilePath)
+    print("Publishing CPM")
+    res = clients[1].publish(cpmTopic, dataStrCPM)
     if not res[0]==0:
         break
 
@@ -376,62 +417,51 @@ while True:
     if readyOBU2:
         print("\nOBU 2:")
         dataDict = jsonFile.toDict(camOBU2filePath)
+        dataDictCPM = jsonFile.toDict(cpmOBU2FilePath)
         currCoordinates = (dataDict["latitude"], dataDict["longitude"])
         if not rsuGreen:
-            if distanceBetween(currCoordinates, locationOBU1) > 5:
+            safetyDist = lengthOBU1/2 + lengthOBU2/2 + 2
+            if distanceBetween(currCoordinates, locationOBU1) > safetyDist:
                 positionsIdxOBU2 += 1
                 newCoordinates = (positions[positionsIdxOBU2][0], positions[positionsIdxOBU2][1])
-                #
                 newSpeed = 5
-                updateCam(camOBU2filePath, dataDict, newCoordinates, newSpeed, lastSpeedOBU2)
+                updateCAM(camOBU2filePath, dataDict, newCoordinates, newSpeed, lastSpeedOBU2)
+                updateCPM(cpmOBU1FilePath, dataDictCPM, newCoordinates, newSpeed, distanceBetween(positions[positionsIdxOBU1], positions[positionsIdxOBU2]))
                 lastSpeedOBU2 = newSpeed
-                #
-                # dataDict["latitude"] = newCoordinates[0]
-                # dataDict["longitude"] = newCoordinates[1]
-                # dataDict["speed"] = 5
-                # dataDict["brakePedal"] = False
-                # dataDict["gasPedal"] = True
-                #
-                # print("OBU 2: coordinates =", newCoordinates, ", speed = 5 m/s")
                 print("Percurso antes do semáforo")
                 # map
                 locationOBU2 = positions[positionsIdxOBU2]
             else:
                 newSpeed = 0
-                updateCam(camOBU2filePath, dataDict, currCoordinates, newSpeed, lastSpeedOBU2)
+                updateCAM(camOBU2filePath, dataDict, currCoordinates, newSpeed, lastSpeedOBU2)
+                updateCPM(cpmOBU1FilePath, dataDictCPM, newCoordinates, newSpeed, distanceBetween(positions[positionsIdxOBU1], positions[positionsIdxOBU2]))
                 lastSpeedOBU2 = newSpeed
-                # dataDict["speed"] = 0
-                # dataDict["brakePedal"] = True
-                # dataDict["gasPedal"] = False
-                # print("OBU 2: parou, coordinates =", newCoordinates, ", speed = 0 m/s")
                 print("Parou")
                 locationOBU2 = currCoordinates
         else:
             if not leaderPressedGasPedal:
-                # print("OBU 2: delay to move, coordinates =", currCoordinates, ", speed = 0 m/s")
                 print("Tempo de espera para OBU 1 reagir")
+                dataDictCPM["cpmParameters"]["perceivedObjectContainer"][0]["xDistance"]["value"] = distanceBetween(positions[positionsIdxOBU1], positions[positionsIdxOBU2])
                 # map
                 locationOBU2 = positions[positionsIdxOBU2]
             else:
                 positionsIdxOBU2 += 1
                 newCoordinates = (positions[positionsIdxOBU2][0], positions[positionsIdxOBU2][1])
                 newSpeed = 5
-                updateCam(camOBU2filePath, dataDict, newCoordinates, newSpeed, lastSpeedOBU2)
+                updateCAM(camOBU2filePath, dataDict, newCoordinates, newSpeed, lastSpeedOBU2)
+                updateCPM(cpmOBU1FilePath, dataDictCPM, newCoordinates, newSpeed, distanceBetween(positions[positionsIdxOBU1], positions[positionsIdxOBU2]))
                 lastSpeedOBU2 = newSpeed
-                # dataDict["latitude"] = newCoordinates[0]
-                # dataDict["longitude"] = newCoordinates[1]
-                # dataDict["speed"] = 5
-                # dataDict["brakePedal"] = False
-                # dataDict["gasPedal"] = True
-                # print("OBU 2: coordinates =", newCoordinates, ", speed = 5 m/s")
                 print("Continuar percurso")
                 # map
                 locationOBU2 = positions[positionsIdxOBU2]
-        jsonFile.updateFile(camOBU2filePath, dataDict)
         dataStr = jsonFile.toStr(camOBU2filePath)
-        # print("----OBU 2 publishing cam")
         print("Publishing CAM: coordinates = (" + str(dataDict["latitude"]) + ", " + str(dataDict["longitude"]) + "), speed =", dataDict["speed"], "m/s")
         res = clients[2].publish(camTopic, dataStr)
+        if not res[0]==0:
+            break
+        dataStrCPM = jsonFile.toStr(cpmOBU2FilePath)
+        print("Publishing CPM: distance to OBU 1 =", dataDictCPM["cpmParameters"]["perceivedObjectContainer"][0]["xDistance"]["value"])
+        res = clients[1].publish(cpmTopic, dataStrCPM)
         if not res[0]==0:
             break
 
@@ -441,61 +471,52 @@ while True:
     if readyOBU3:
         print("\nOBU 3:")
         dataDict = jsonFile.toDict(camOBU3filePath)
+        dataDictCPM = jsonFile.toDict(cpmOBU3FilePath)
         currCoordinates = (dataDict["latitude"], dataDict["longitude"])
         if not rsuGreen:
-            if distanceBetween(currCoordinates, locationOBU2) > 5:
+            safetyDist = lengthOBU2/2 + lengthOBU3/2 + 2
+            if distanceBetween(currCoordinates, locationOBU2) > safetyDist:
                 positionsIdxOBU3 += 1
                 newCoordinates = (positions[positionsIdxOBU3][0], positions[positionsIdxOBU3][1])
-                #
                 newSpeed = 5
-                updateCam(camOBU3filePath, dataDict, newCoordinates, newSpeed, lastSpeedOBU3)
+                updateCAM(camOBU3filePath, dataDict, newCoordinates, newSpeed, lastSpeedOBU3)
+                updateCPM(cpmOBU1FilePath, dataDictCPM, newCoordinates, newSpeed, distanceBetween(positions[positionsIdxOBU2], positions[positionsIdxOBU3]))
                 lastSpeedOBU3 = newSpeed
-                #
-                # dataDict["latitude"] = newCoordinates[0]
-                # dataDict["longitude"] = newCoordinates[1]
-                # dataDict["speed"] = 5
-                # dataDict["brakePedal"] = False
-                # dataDict["gasPedal"] = True
-                #
-                # print("OBU 3: coordinates =", newCoordinates, ", speed = 5 m/s")
                 print("Percurso antes do semáforo")
                 # map
                 locationOBU3 = positions[positionsIdxOBU3]
             else:
                 newSpeed = 0
-                updateCam(camOBU3filePath, dataDict, currCoordinates, newSpeed, lastSpeedOBU3)
+                updateCAM(camOBU3filePath, dataDict, currCoordinates, newSpeed, lastSpeedOBU3)
+                updateCPM(cpmOBU1FilePath, dataDictCPM, newCoordinates, newSpeed, distanceBetween(positions[positionsIdxOBU2], positions[positionsIdxOBU3]))
                 lastSpeedOBU3 = newSpeed
-                # dataDict["speed"] = 0
-                # dataDict["brakePedal"] = True
-                # dataDict["gasPedal"] = False
-                # print("OBU 3: parou, coordinates =", newCoordinates, ", speed = 0 m/s")
                 print("Parou")
                 locationOBU3 = currCoordinates
         else:
             if not leaderPressedGasPedal:
-                # print("OBU 3: delay to move, coordinates =", currCoordinates, ", speed = 0 m/s")
                 print("Tempo de espera para OBU 1 reagir")
+                dataDictCPM["cpmParameters"]["perceivedObjectContainer"][0]["xDistance"]["value"] = distanceBetween(positions[positionsIdxOBU2], positions[positionsIdxOBU3])
+
                 # map
                 locationOBU3 = positions[positionsIdxOBU3]
             else:
                 positionsIdxOBU3 += 1
                 newCoordinates = (positions[positionsIdxOBU3][0], positions[positionsIdxOBU3][1])
                 newSpeed = 5
-                updateCam(camOBU3filePath, dataDict, newCoordinates, newSpeed, lastSpeedOBU3)
+                updateCAM(camOBU3filePath, dataDict, newCoordinates, newSpeed, lastSpeedOBU3)
+                updateCPM(cpmOBU1FilePath, dataDictCPM, newCoordinates, newSpeed, distanceBetween(positions[positionsIdxOBU2], positions[positionsIdxOBU3]))
                 lastSpeedOBU3 = newSpeed
-                # dataDict["latitude"] = newCoordinates[0]
-                # dataDict["longitude"] = newCoordinates[1]
-                # dataDict["speed"] = 5
-                # dataDict["brakePedal"] = False
-                # dataDict["gasPedal"] = True
-                # print("OBU 3: coordinates =", newCoordinates, ", speed = 5 m/s")
                 print("Continuar percurso")
                 # map
                 locationOBU3 = positions[positionsIdxOBU3]
-        jsonFile.updateFile(camOBU3filePath, dataDict)
         dataStr = jsonFile.toStr(camOBU3filePath)
         print("Publishing CAM: coordinates = (" + str(dataDict["latitude"]) + ", " + str(dataDict["longitude"]) + "), speed =", dataDict["speed"], "m/s")
         res = clients[3].publish(camTopic, dataStr)
+        if not res[0]==0:
+            break
+        dataStrCPM = jsonFile.toStr(cpmOBU3FilePath)
+        print("Publishing CPM: distance to OBU 2 =", dataDictCPM["cpmParameters"]["perceivedObjectContainer"][0]["xDistance"]["value"])
+        res = clients[1].publish(cpmTopic, dataStrCPM)
         if not res[0]==0:
             break
 

@@ -1,4 +1,4 @@
-python3 pub.py
+python3 simul.py
 
 echo "1 - Generate video (it takes about 4 minutes)"
 echo "2 - Exit program"

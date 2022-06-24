@@ -127,11 +127,11 @@ cpmOBUDataDict = jsonFile.toDict(cpmOBUFilePath)
 # OBU 1
 cpmOBU1FilePath = "my_jsons/cpm_obu1.json"
 cpmOBU1DataDict = jsonFile.toDict(cpmOBU1FilePath)
-cpmOBU1DataDict["cpmParameters"]["numberOfPerceivedObjects"] = 0
-cpmOBU1DataDict["cpmParameters"]["managementContainer"]["stationType"] = 5
 cpmOBU1DataDict["cpmParameters"]["managementContainer"]["referencePosition"]["latitude"] = 10
 cpmOBU1DataDict["cpmParameters"]["managementContainer"]["referencePosition"]["longitude"] = 10
-# cpmOBU1DataDict["cpmParameters"]["stationDataContainer"]["originatingVehicleContainer"]["speed"]["speedValue"] = 5
+cpmOBU1DataDict["cpmParameters"]["stationDataContainer"]["originatingVehicleContainer"]["speed"]["speedValue"] = 5
+cpmOBU1DataDict["cpmParameters"]["numberOfPerceivedObjects"] = 0
+
 # cpmOBU1DataDict["cpmParameters"]["perceivedObjectContainer"]["xDistance"]["value"] = distanceBetween(...)
 # cpmOBU1DataDict["cpmParameters"]["perceivedObjectContainer"]["yDistance"]["value"] = 0
 # cpmOBU1DataDict["cpmParameters"]["perceivedObjectContainer"]["xSpeed"]["value"] = velocidade do veiculo à frente
@@ -143,12 +143,12 @@ cpmOBU1DataStr = jsonFile.toStr(cpmOBU1FilePath)
 
 
 # OBU 2
-cpmOBUDataDict["cpmParameters"]["numberOfPerceivedObjects"] = 0
-cpmOBUDataDict["cpmParameters"]["managementContainer"]["stationType"] = 5
 cpmOBUDataDict["cpmParameters"]["managementContainer"]["referencePosition"]["latitude"] = 10
 cpmOBUDataDict["cpmParameters"]["managementContainer"]["referencePosition"]["longitude"] = 10
-# cpmOBUDataDict["cpmParameters"]["stationDataContainer"]["originatingVehicleContainer"]["speed"]["speedValue"] = 5
-# cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"]["xDistance"]["value"] = distanceBetween(...)
+cpmOBUDataDict["cpmParameters"]["stationDataContainer"]["originatingVehicleContainer"]["speed"]["speedValue"] = 5
+cpmOBUDataDict["cpmParameters"]["numberOfPerceivedObjects"] = 1
+cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["objectID"] = 0 # 0, 1, 2, 3 ou 4, ver no wireshark o que são
+cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["xDistance"]["value"] = -1
 # cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"]["yDistance"]["value"] = 0
 # cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"]["xSpeed"]["value"] = velocidade do veiculo à frente
 # cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"]["ySpeed"]["value"] = 0
