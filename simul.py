@@ -280,7 +280,8 @@ cpmOBUDataDict["cpmParameters"]["managementContainer"]["referencePosition"]["lon
 cpmOBUDataDict["cpmParameters"]["stationDataContainer"]["originatingVehicleContainer"]["speed"]["speedValue"] = 5
 cpmOBUDataDict["cpmParameters"]["numberOfPerceivedObjects"] = 1
 cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["objectID"] = 0 # 0, 1, 2, 3 ou 4, ver no wireshark o que são
-cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["xDistance"]["value"] = -1
+cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["xDistance"]["value"] = 100
+distanceCPMOBU2 = cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["xDistance"]["value"]
 cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["yDistance"]["value"] = 0
 # cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["xSpeed"]["value"] = 5
 # cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["ySpeed"]["value"] = 0
@@ -314,7 +315,8 @@ cpmOBUDataDict["cpmParameters"]["managementContainer"]["referencePosition"]["lon
 cpmOBUDataDict["cpmParameters"]["stationDataContainer"]["originatingVehicleContainer"]["speed"]["speedValue"] = 5
 cpmOBUDataDict["cpmParameters"]["numberOfPerceivedObjects"] = 1
 cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["objectID"] = 0 # 0, 1, 2, 3 ou 4, ver no wireshark o que são
-cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["xDistance"]["value"] = -1
+cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["xDistance"]["value"] = 100
+distanceCPMOBU3 = cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["xDistance"]["value"]
 cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["yDistance"]["value"] = 0
 # cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["xSpeed"]["value"] = 5
 # cpmOBUDataDict["cpmParameters"]["perceivedObjectContainer"][0]["ySpeed"]["value"] = 0
@@ -393,10 +395,10 @@ while True:
             leaderPressedGasPedal = True
             positionsIdxOBU1 += 1
             newCoordinates = (positions[positionsIdxOBU1][0], positions[positionsIdxOBU1][1])
-            newSpeed = 5
-            updateCAM(camOBU1filePath, dataDict, newCoordinates, newSpeed, lastSpeedOBU1)
-            updateCPM(cpmOBU1FilePath, dataDictCPM, newCoordinates, newSpeed)
-            lastSpeedOBU1 = newSpeed
+            leaderSpeed = 5
+            updateCAM(camOBU1filePath, dataDict, newCoordinates, leaderSpeed, lastSpeedOBU1)
+            updateCPM(cpmOBU1FilePath, dataDictCPM, newCoordinates, leaderSpeed)
+            lastSpeedOBU1 = leaderSpeed
             print("Continuar percurso")
             # map
             locationOBU1 = positions[positionsIdxOBU1]    
@@ -421,12 +423,14 @@ while True:
         currCoordinates = (dataDict["latitude"], dataDict["longitude"])
         if not rsuGreen:
             safetyDist = lengthOBU1/2 + lengthOBU2/2 + 2
-            if distanceBetween(currCoordinates, locationOBU1) > safetyDist:
+            # if distanceBetween(currCoordinates, locationOBU1) > safetyDist:
+            if distanceCPMOBU2 > safetyDist:
                 positionsIdxOBU2 += 1
                 newCoordinates = (positions[positionsIdxOBU2][0], positions[positionsIdxOBU2][1])
                 newSpeed = 5
                 updateCAM(camOBU2filePath, dataDict, newCoordinates, newSpeed, lastSpeedOBU2)
-                updateCPM(cpmOBU1FilePath, dataDictCPM, newCoordinates, newSpeed, distanceBetween(positions[positionsIdxOBU1], positions[positionsIdxOBU2]))
+                distanceCPMOBU2 = distanceBetween(positions[positionsIdxOBU1], positions[positionsIdxOBU2])
+                updateCPM(cpmOBU1FilePath, dataDictCPM, newCoordinates, newSpeed, distanceCPMOBU2)
                 lastSpeedOBU2 = newSpeed
                 print("Percurso antes do semáforo")
                 # map
@@ -447,7 +451,7 @@ while True:
             else:
                 positionsIdxOBU2 += 1
                 newCoordinates = (positions[positionsIdxOBU2][0], positions[positionsIdxOBU2][1])
-                newSpeed = 5
+                newSpeed = leaderSpeed
                 updateCAM(camOBU2filePath, dataDict, newCoordinates, newSpeed, lastSpeedOBU2)
                 updateCPM(cpmOBU1FilePath, dataDictCPM, newCoordinates, newSpeed, distanceBetween(positions[positionsIdxOBU1], positions[positionsIdxOBU2]))
                 lastSpeedOBU2 = newSpeed
@@ -475,12 +479,14 @@ while True:
         currCoordinates = (dataDict["latitude"], dataDict["longitude"])
         if not rsuGreen:
             safetyDist = lengthOBU2/2 + lengthOBU3/2 + 2
-            if distanceBetween(currCoordinates, locationOBU2) > safetyDist:
+            # if distanceBetween(currCoordinates, locationOBU2) > safetyDist:
+            if distanceCPMOBU3 > safetyDist:
                 positionsIdxOBU3 += 1
                 newCoordinates = (positions[positionsIdxOBU3][0], positions[positionsIdxOBU3][1])
                 newSpeed = 5
                 updateCAM(camOBU3filePath, dataDict, newCoordinates, newSpeed, lastSpeedOBU3)
-                updateCPM(cpmOBU1FilePath, dataDictCPM, newCoordinates, newSpeed, distanceBetween(positions[positionsIdxOBU2], positions[positionsIdxOBU3]))
+                distanceCPMOBU3 = distanceBetween(positions[positionsIdxOBU2], positions[positionsIdxOBU3])
+                updateCPM(cpmOBU1FilePath, dataDictCPM, newCoordinates, newSpeed, distanceCPMOBU3)
                 lastSpeedOBU3 = newSpeed
                 print("Percurso antes do semáforo")
                 # map
@@ -502,7 +508,7 @@ while True:
             else:
                 positionsIdxOBU3 += 1
                 newCoordinates = (positions[positionsIdxOBU3][0], positions[positionsIdxOBU3][1])
-                newSpeed = 5
+                newSpeed = leaderSpeed
                 updateCAM(camOBU3filePath, dataDict, newCoordinates, newSpeed, lastSpeedOBU3)
                 updateCPM(cpmOBU1FilePath, dataDictCPM, newCoordinates, newSpeed, distanceBetween(positions[positionsIdxOBU2], positions[positionsIdxOBU3]))
                 lastSpeedOBU3 = newSpeed
